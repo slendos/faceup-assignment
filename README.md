@@ -18,4 +18,3 @@ open http://localhost:3000/swagger
 - [drizzle](https://orm.drizzle.team/)
 - [hono zod openapi](https://hono.dev/snippets/zod-openapi)
 - [sqlite](https://www.sqlite.org)
-
