@@ -1,17 +1,10 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { ilike, like } from 'drizzle-orm';
+import { like } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { reports } from '@/db/schema';
 
-const ReportSchema = z
-  .object({
-    id: z.number().openapi({ example: 1 }),
-    senderName: z.string().openapi({ example: 'John Doe' }),
-    senderAge: z.number().openapi({ example: 42 }),
-    fileId: z.number().nullable().openapi({ example: 1 }),
-  })
-  .openapi('Report');
+import { ReportSchema } from './api-schema';
 
 const ReportsSchema = z.array(ReportSchema);
 
@@ -40,9 +33,8 @@ reportsRoute.openapi(getReportsRoute, async (c) => {
       fileId: reports.fileId,
     })
     .from(reports)
-    .where(
-      senderName ? like(reports.senderName, `%${senderName}%`) : undefined,
-    );
+    .where(senderName ? like(reports.senderName, `%${senderName}%`) : undefined)
+    .limit(20);
 
   return c.json(items);
 });

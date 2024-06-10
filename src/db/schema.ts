@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { InferSelectModel, sql } from 'drizzle-orm';
 import {
   blob,
   index,
@@ -27,12 +27,12 @@ export const reports = sqliteTable(
     createdAt: text('created_at')
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text('uploaded_at')
+    updatedAt: text('updated_at')
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),
-    fileId: integer('file_id').references(() => files.id, {
-      onDelete: 'cascade',
-    }),
+    fileId: integer('file_id').references(() => files.id),
   },
   (table) => ({ senderNameIdx: index('sender_name_idx').on(table.senderName) }),
 );
+
+export type Report = InferSelectModel<typeof reports>;

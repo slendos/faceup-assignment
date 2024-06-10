@@ -19,7 +19,7 @@ const CreateReportSchema = z.object({
 });
 
 const CreateReportResponseSchema = z
-  .object({ id: z.number() })
+  .object({ id: z.number().openapi({ example: 1 }) })
   .openapi('CreateReportResponse');
 
 const config = createRoute({

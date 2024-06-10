@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "612cd410-747e-44ee-bdf4-b87a652ef094",
+  "id": "a7fdd51c-e0e9-44c5-b9ea-d4913ceea1d1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "files": {
@@ -88,8 +88,8 @@
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         },
-        "uploaded_at": {
-          "name": "uploaded_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -124,7 +124,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },

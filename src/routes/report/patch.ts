@@ -1,10 +1,26 @@
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { eq, sql } from 'drizzle-orm';
 
-import { db } from '@/db';
+import { Tx, db } from '@/db';
 import { files, reports } from '@/db/schema';
 import { ErrorSchema } from '@/routes/api-schema';
 import { fileToBuffer } from '@/utils';
+
+type InsertFileParams = { file: File; tx: Tx };
+
+async function insertFile({ file, tx }: InsertFileParams) {
+  const [item] = await tx
+    .insert(files)
+    .values({
+      content: await fileToBuffer(file),
+      name: file.name,
+      extension: file.type,
+      size: file.size,
+    })
+    .returning({ id: files.id });
+
+  return item!;
+}
 
 const PatchReportSchema = z.object({
   senderName: z
@@ -27,7 +43,7 @@ const PatchReportSchema = z.object({
 });
 
 const PatchReportResponseSchema = z
-  .object({ id: z.number() })
+  .object({ id: z.number().openapi({ example: 1 }) })
   .openapi('PatchReportResponse');
 
 const PatchReportParamsSchema = z.object({
@@ -76,19 +92,9 @@ patchReportRoute.openapi(config, async (c) => {
   }
 
   const updatedReport = await db.transaction(async (tx) => {
-    const [insertedFile] = file
-      ? await tx
-          .insert(files)
-          .values({
-            content: await fileToBuffer(file),
-            name: file.name,
-            extension: file.type,
-            size: file.size,
-          })
-          .returning({ id: files.id })
-      : [];
+    const insertedFile = file ? await insertFile({ tx, file }) : null;
 
-    const [item] = await tx
+    const response = await tx
       .update(reports)
       .set({
         ...values,
@@ -98,7 +104,11 @@ patchReportRoute.openapi(config, async (c) => {
       .where(eq(reports.id, params.id))
       .returning({ id: reports.id });
 
-    return { id: item!.id };
+    if (insertedFile && report.fileId) {
+      await tx.delete(files).where(eq(files.id, report.fileId));
+    }
+
+    return { id: response[0]!.id };
   });
 
   return c.json(updatedReport, 200);
